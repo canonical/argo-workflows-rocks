@@ -1,0 +1,54 @@
+name: argoexec # the name of your ROCK
+base: bare
+build-base: ubuntu:22.04 # the base environment for this ROCK
+version: 'latest' # just for humans. Semantic versioning is recommended
+summary: argoexec demo ROCK
+description: |
+    Some
+    description
+license: Apache-2.0 # your application's SPDX license
+platforms: # The platforms this ROCK should be built on and run on
+    amd64:
+
+services:
+  argoexec:
+    override: replace
+    command: argoexec
+    startup: enabled
+
+parts:
+  base-deps:
+    plugin: nil
+    stage-packages:
+      - base-files
+      - netbase
+      - tzdata
+
+  builder:
+    plugin: make
+    source: .
+    build-snaps:
+      - go/1.19/stable
+    build-packages:
+      - git
+      - ca-certificates
+      - wget
+      - curl
+      - gcc
+      - mailcap
+    override-build: | 
+      go mod download
+      make dist/argoexec
+      install -DT "./dist/argoexec" "$CRAFT_PART_INSTALL/bin/argoexec"
+      install -DT "/etc/mime.types" "$CRAFT_PART_INSTALL/etc/mime.types"
+
+  copy-files:
+    plugin: dump
+    source: hack
+    organize:
+      ssh_known_hosts: etc/ssh/ssh_known_hosts
+      nsswitch.conf: etc/ssh/nsswitch.conf
+    stage:
+      - etc/ssh/ssh_known_hosts
+      - etc/ssh/nsswitch.conf
+
