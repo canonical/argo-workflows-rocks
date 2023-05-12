@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: argoexec
+base: bare
+build-base: ubuntu:22.04
+version: "v3.3.8_1"
+summary: An image for Argo Workflows executor.
+description: |
+    This image is used as part of the Charmed Kubeflow product. An Argo workflow executor is a process that conforms to a specific interface that allows Argo to perform certain actions like monitoring pod logs, collecting artifacts, managing container lifecycles, etc.
+license: Apache-2.0
+platforms:
+    amd64:
+
+services:
+  argoexec:
+    override: replace
+    command: argoexec
+    startup: enabled
+    user: ubuntu
+
+parts:
+  base-deps:
+    plugin: nil
+    stage-packages:
+      - base-files
+      - netbase
+      - tzdata
+
+  builder:
+    plugin: make
+    source: https://github.com/argoproj/argo-workflows
+    source-type: git
+    source-tag: v3.3.8
+    build-snaps:
+      - go/1.19/stable
+    build-packages:
+      - git
+      - ca-certificates
+      - wget
+      - curl
+      - gcc
+      - mailcap
+    override-build: |
+      # argoexec-build stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L82
+      cat .dockerignore >> .gitignore
+      git status --porcelain | cut -c4- | xargs git update-index --skip-worktree
+      --mount=type=cache,target=/root/.cache/go-build make dist/argoexec
+      setcap CAP_SYS_PTRACE,CAP_SYS_CHROOT+ei dist/argoexec
+
+      # argoexec stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L122
+      install -DT "./dist/argoexec" "$CRAFT_PART_INSTALL/bin/argoexec"
+      install -DT "/etc/mime.types" "$CRAFT_PART_INSTALL/etc/mime.types"
+
+      # security requirement
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/ROCK images
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
+      dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
+      > ${CRAFT_PART_INSTALL}/usr/share/ROCK images/dpkg.query
+
+  copy-files:
+    plugin: dump
+    source: https://github.com/argoproj/argo-workflows
+    source-type: git
+    source-subdir: hack
+    source-tag: v3.3.8
+    organize:
+      ssh_known_hosts: etc/ssh/ssh_known_hosts
+      nsswitch.conf: etc/ssh/nsswitch.conf
+    stage:
+      - etc/ssh/ssh_known_hosts
+      - etc/ssh/nsswitch.conf
+
+  non-root-user:
+    plugin: nil
+    after: kfam
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
+      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
