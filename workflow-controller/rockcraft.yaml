@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+name: workflow-controller
+summary: An image for Argo Workflows controller.
+description: |
+    This image is used as part of the Charmed Kubeflow product. An Argo workflow controller is a process that conforms to a specific interface that allows Argo to perform certain actions like monitoring pod logs, collecting artifacts, managing container lifecycles, etc.
+version: v3.3.8_22.04_1 # version format: <KF-upstream-version>_<base-version>_<Charmed-KF-version>
+license: Apache-2.0
+build-base: ubuntu:22.04
+base: bare
+services:
+  argoexec:
+    override: replace
+    command: workflow-controller
+    startup: enabled
+    user: ubuntu
+platforms:
+    amd64:
+
+parts:
+  security-team-requirement:
+    plugin: nil
+    override-build: |
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
+
+  base-deps:
+    plugin: nil
+    stage-packages:
+      - base-files
+      - netbase
+      - tzdata
+
+  builder:
+    plugin: make
+    source: https://github.com/argoproj/argo-workflows
+    source-type: git
+    source-tag: v3.3.8
+    build-snaps:
+      - go/1.17/stable
+    build-packages:
+      - git
+      - ca-certificates
+      - wget
+      - curl
+      - gcc
+      - mailcap
+      - libcap2-bin
+      - zip
+    override-build: |
+      # builder stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L36 
+      go mod download
+
+      # workflow-controller-build stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L94
+      cat .dockerignore >> .gitignore
+      git status --porcelain | cut -c4- | xargs git update-index --skip-worktree
+      make dist/workflow-controller
+
+      # workflow-controller stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L131
+      ls -la /usr/share/
+      install -DTd "/usr/share/zoneinfo" "$CRAFT_PART_INSTALL/usr/share/zoneinfo"
+      chown 8737 $CRAFT_PART_INSTALL/usr/share/zoneinfo
+      install -DT "./dist/workflow-controller" "$CRAFT_PART_INSTALL/bin/workflow-controller"
+      chown 8737 $CRAFT_PART_INSTALL/bin/workflow-controller
+
+  copy-files:
+    plugin: dump
+    after: [builder]
+    source: https://github.com/argoproj/argo-workflows
+    source-type: git
+    source-subdir: hack
+    source-tag: v3.3.8
+    organize:
+      ssh_known_hosts: etc/ssh/ssh_known_hosts
+      nsswitch.conf: etc/ssh/nsswitch.conf
+    stage:
+      - etc/ssh/ssh_known_hosts
+      - etc/ssh/nsswitch.conf
+
+  # using user 8737 because it was used in workload Dockerfile
+  non-root-user:
+    plugin: nil
+    after: [copy-files]
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      mkdir -p $CRAFT_OVERLAY/etc
+      chmod 755 $CRAFT_OVERLAY/etc
+      groupadd -R $CRAFT_OVERLAY -g 8737 ubuntu
+      useradd -R $CRAFT_OVERLAY -M -r -u 8737 -g ubuntu ubuntu
+
