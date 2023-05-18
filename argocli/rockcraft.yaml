@@ -77,13 +77,14 @@ parts:
       - etc/ssh/ssh_known_hosts
       - etc/ssh/nsswitch.conf
 
-  # commented due to issue https://github.com/canonical/argo-workflows-rocks/issues/5
-  # non-root-user:
-  #   plugin: nil
-  #   after: [copy]
-  #   overlay-script: |
-  #     # Create a user in the $CRAFT_OVERLAY chroot
-  #     groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
-  #     useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
-  #   override-prime: |
-  #     craftctl default
+  non-root-user:
+    plugin: nil
+    after: [copy]
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      mkdir $CRAFT_OVERLAY/etc
+      chmod 755 $CRAFT_OVERLAY/etc
+      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
+      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
+    override-prime: |
+      craftctl default
