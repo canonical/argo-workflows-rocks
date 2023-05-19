@@ -1,0 +1,90 @@
+name: argo-cli
+summary: "Argo Server rock"
+description: "Container-Native Workflow Engine for Kubernetes"
+version: "v3.3.8_22.04_1" # version format: <KF-upstream-version>_<base-version>_<Charmed-KF-version>
+license: Apache-2.0
+base: bare
+build-base: ubuntu:22.04
+platforms:
+  amd64:
+services:
+  argocli:
+    override: replace
+    summary: "argo-cli service"
+    command: argo
+    startup: enabled
+    user: ubuntu
+
+parts:
+
+  security-team-requirement:
+    plugin: nil
+    override-build: |
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
+  
+  argo-ui:
+    plugin: npm
+    source: https://github.com/argoproj/argo-workflows
+    source-type: git
+    source-tag: v3.3.8
+    build-snaps:
+      - node/16/stable
+    override-build: |
+      JOBS=max yarn --cwd ui install --network-timeout 1000000
+      NODE_OPTIONS="--max-old-space-size=2048" JOBS=max yarn --cwd ui build
+      cp -r ui/dist/app $CRAFT_STAGE
+
+  argocli-build:
+    after: [argo-ui]
+    plugin: make
+    source: https://github.com/argoproj/argo-workflows
+    source-type: git
+    source-tag: v3.3.8
+    build-snaps:
+      - go/1.17/stable
+    build-packages:
+      - git
+      - ca-certificates
+      - wget
+      - curl
+      - gcc
+      - mailcap
+    override-build: |
+      # argocli-build stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L105
+      mkdir -p ${CRAFT_PART_INSTALL}/ui/dist
+      cp -r $CRAFT_STAGE/app ${CRAFT_PART_INSTALL}/ui/dist/
+      touch ${CRAFT_PART_INSTALL}/ui/dist/node_modules.marker
+      touch ${CRAFT_PART_INSTALL}/ui/dist/app/index.html
+      cat .dockerignore >> .gitignore
+      git status --porcelain | cut -c4- | xargs git update-index --skip-worktree
+      make dist/argo
+      install -D -m755 /etc/ssl/certs/ca-certificates.crt ${CRAFT_PART_INSTALL}/etc/ssl/certs/ca-certificates.crt
+      install -D -m755 ./dist/argo ${CRAFT_PART_INSTALL}/bin/argo
+
+
+  copy:
+    after: [argocli-build]
+    plugin: dump
+    source: https://github.com/argoproj/argo-workflows
+    source-type: git
+    source-subdir: hack
+    source-tag: v3.3.8
+    organize:
+      ssh_known_hosts: etc/ssh/ssh_known_hosts
+      nsswitch.conf: etc/ssh/nsswitch.conf
+    prime:
+      - etc/ssh/ssh_known_hosts
+      - etc/ssh/nsswitch.conf
+
+  non-root-user:
+    plugin: nil
+    after: [copy]
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      mkdir $CRAFT_OVERLAY/etc
+      chmod 755 $CRAFT_OVERLAY/etc
+      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
+      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
+    override-prime: |
+      craftctl default
