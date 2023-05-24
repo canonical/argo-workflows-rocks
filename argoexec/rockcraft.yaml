@@ -101,7 +101,6 @@ parts:
 
   non-root-user:
     plugin: nil
-    after: [copy-files]
     overlay-script: |
       # Create a user in the $CRAFT_OVERLAY chroot
       mkdir -p $CRAFT_OVERLAY/etc
