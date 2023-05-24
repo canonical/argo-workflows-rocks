@@ -10,7 +10,7 @@ license: Apache-2.0
 build-base: ubuntu:22.04
 base: bare
 services:
-  argoexec:
+  workflow-controller:
     override: replace
     command: workflow-controller
     startup: enabled
