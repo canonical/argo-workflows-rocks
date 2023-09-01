@@ -20,9 +20,6 @@ services:
 platforms:
     amd64:
 
-platforms:
-    amd64:
-
 parts:
   security-team-requirement:
     plugin: nil
