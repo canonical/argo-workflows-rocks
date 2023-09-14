@@ -10,13 +10,13 @@ license: Apache-2.0
 build-base: ubuntu:22.04
 base: bare
 version: "v3.3.8_22.04_1" # version format: <KF-upstream-version>_<base-version>_<Charmed-KF-version>
+run-user: _daemon_
 services:
   argoexec:
     override: replace
     command: argoexec
     startup: enabled
-    user: ubuntu
-
+    working-dir: "/bin"
 platforms:
     amd64:
 
@@ -98,13 +98,3 @@ parts:
     stage:
       - etc/ssh/ssh_known_hosts
       - etc/ssh/nsswitch.conf
-
-  non-root-user:
-    plugin: nil
-    overlay-script: |
-      # Create a user in the $CRAFT_OVERLAY chroot
-      mkdir -p $CRAFT_OVERLAY/etc
-      chmod 755 $CRAFT_OVERLAY/etc
-      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
-      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
-
