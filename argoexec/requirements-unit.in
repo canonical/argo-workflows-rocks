@@ -1,0 +1,5 @@
+charmed_kubeflow_chisme
+juju~=2.9.0
+pytest
+pytest-operator
+ops
