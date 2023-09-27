@@ -81,7 +81,7 @@ parts:
       make dist/argoexec
       setcap CAP_SYS_PTRACE,CAP_SYS_CHROOT+ei dist/argoexec
 
-      # argoexec stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L132
+      # argoexec stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L122
       install -DT "./dist/argoexec" "$CRAFT_PART_INSTALL/bin/argoexec"
       install -DT "/etc/mime.types" "$CRAFT_PART_INSTALL/etc/mime.types"
 
