@@ -9,7 +9,7 @@ description: |
 license: Apache-2.0
 build-base: ubuntu:22.04
 base: bare
-version: "v3.3.10_22.04_1" # version format: <KF-upstream-version>_<base-version>_<Charmed-KF-version>
+version: "v3.3.8_22.04_1" # version format: <KF-upstream-version>_<base-version>_<Charmed-KF-version>
 run-user: _daemon_
 services:
   argoexec:
@@ -51,7 +51,7 @@ parts:
     after: [base-deps]
     source: https://github.com/argoproj/argo-workflows
     source-type: git
-    source-tag: v3.3.10
+    source-tag: v3.3.8
     build-snaps:
       - go/1.17/stable
     build-packages:
@@ -69,19 +69,19 @@ parts:
       - jq
       - zip
     override-build: |
-      # builder stage https://github.com/argoproj/argo-workflows/blob/v3.3.10/Dockerfile#L36
+      # builder stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L36
       go mod download
 
       # reset LDFLAGS because Go has different format, i.e. '-L' is undefined in Go
       LDFLAGS=""
 
-      # argoexec-build stage https://github.com/argoproj/argo-workflows/blob/v3.3.10/Dockerfile#L82
+      # argoexec-build stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L82
       cat .dockerignore >> .gitignore
       git status --porcelain | cut -c4- | xargs git update-index --skip-worktree
       make dist/argoexec
       setcap CAP_SYS_PTRACE,CAP_SYS_CHROOT+ei dist/argoexec
 
-      # argoexec stage https://github.com/argoproj/argo-workflows/blob/v3.3.10/Dockerfile#L132
+      # argoexec stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L132
       install -DT "./dist/argoexec" "$CRAFT_PART_INSTALL/bin/argoexec"
       install -DT "/etc/mime.types" "$CRAFT_PART_INSTALL/etc/mime.types"
 
@@ -91,7 +91,7 @@ parts:
     source: https://github.com/argoproj/argo-workflows
     source-type: git
     source-subdir: hack
-    source-tag: v3.3.10
+    source-tag: v3.3.8
     organize:
       ssh_known_hosts: etc/ssh/ssh_known_hosts
       nsswitch.conf: etc/ssh/nsswitch.conf
