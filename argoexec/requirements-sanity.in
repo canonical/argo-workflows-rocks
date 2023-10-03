@@ -1,5 +1,2 @@
 charmed_kubeflow_chisme
-juju<4.0
 pytest
-pytest-operator
-ops
