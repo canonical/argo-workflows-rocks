@@ -9,7 +9,7 @@ description: |
 license: Apache-2.0
 build-base: ubuntu:22.04
 base: bare
-version: "v3.3.8_22.04_1" # version format: <KF-upstream-version>_<base-version>_<Charmed-KF-version>
+version: "v3.3.9_22.04_2" # version format: <KF-upstream-version>_<base-version>_<Charmed-KF-version>
 run-user: _daemon_
 services:
   argoexec:
@@ -51,7 +51,7 @@ parts:
     after: [base-deps]
     source: https://github.com/argoproj/argo-workflows
     source-type: git
-    source-tag: v3.3.8
+    source-tag: v3.3.9
     build-snaps:
       - go/1.17/stable
     build-packages:
@@ -68,6 +68,12 @@ parts:
       - libcap2-dev
       - jq
       - zip
+    stage-packages:
+      - git
+      - libcap2
+      - jq
+      - tar
+      - gzip
     override-build: |
       # builder stage https://github.com/argoproj/argo-workflows/blob/v3.3.8/Dockerfile#L36
       go mod download
@@ -91,7 +97,7 @@ parts:
     source: https://github.com/argoproj/argo-workflows
     source-type: git
     source-subdir: hack
-    source-tag: v3.3.8
+    source-tag: v3.3.9
     organize:
       ssh_known_hosts: etc/ssh/ssh_known_hosts
       nsswitch.conf: etc/ssh/nsswitch.conf
