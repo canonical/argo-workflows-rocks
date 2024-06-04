@@ -1,14 +1,13 @@
-#!/usr/bin/env python3
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
-
+# Source: argo-workflows/Dockerfile
 name: argoexec
 summary: An image for Argo Workflows executor.
 description: |
     This image is used as part of the Charmed Kubeflow product. An Argo workflow executor is a process that conforms to a specific interface that allows Argo to perform certain actions like monitoring pod logs, collecting artifacts, managing container lifecycles, etc.
 license: Apache-2.0
 base: ubuntu@22.04
-version: "3.3.10"
+version: "3.4.16"
 run-user: _daemon_
 services:
   argoexec:
@@ -35,26 +34,14 @@ parts:
       - netbase
       - tzdata
 
-  base-snaps:
-    plugin: nil
-    stage-snaps:
-      - docker
-      - kubectl/1.24/stable
-    organize:
-      docker: bin/docker
-      kubectl: bin/kubectl
-    stage:
-      - bin/docker
-      - bin/kubectl
-
   builder:
     plugin: make
     after: [base-deps]
     source: https://github.com/argoproj/argo-workflows
     source-type: git
-    source-tag: v3.3.10
+    source-tag: v3.4.16
     build-snaps:
-      - go/1.17/stable
+      - go/1.20/stable
     build-packages:
       - git
       - ca-certificates
@@ -65,10 +52,8 @@ parts:
       - mailcap
       - procps
       - tar
-      - libcap2-bin
       - libcap2-dev
       - jq
-      - zip
     stage-packages:
       - git
       - libcap2
@@ -76,19 +61,16 @@ parts:
       - tar
       - gzip
     override-build: |
-      # builder stage https://github.com/argoproj/argo-workflows/blob/v3.3.10/Dockerfile#L36
+      # builder stage https://github.com/argoproj/argo-workflows/blob/v3.4.16/Dockerfile#L36
       go mod download
 
       # reset LDFLAGS because Go has different format, i.e. '-L' is undefined in Go
       LDFLAGS=""
 
-      # argoexec-build stage https://github.com/argoproj/argo-workflows/blob/v3.3.10/Dockerfile#L82
-      cat .dockerignore >> .gitignore
-      git status --porcelain | cut -c4- | xargs git update-index --skip-worktree
+      # argoexec-build stage https://github.com/argoproj/argo-workflows/blob/v3.4.16/Dockerfile#L82
       make dist/argoexec
-      setcap CAP_SYS_PTRACE,CAP_SYS_CHROOT+ei dist/argoexec
 
-      # argoexec stage https://github.com/argoproj/argo-workflows/blob/v3.3.10/Dockerfile#L132
+      # argoexec stage https://github.com/argoproj/argo-workflows/blob/v3.4.16/Dockerfile#L132
       install -DT "./dist/argoexec" "$CRAFT_PART_INSTALL/bin/argoexec"
       install -DT "/etc/mime.types" "$CRAFT_PART_INSTALL/etc/mime.types"
 
@@ -98,7 +80,7 @@ parts:
     source: https://github.com/argoproj/argo-workflows
     source-type: git
     source-subdir: hack
-    source-tag: v3.3.10
+    source-tag: v3.4.16
     organize:
       ssh_known_hosts: etc/ssh/ssh_known_hosts
       nsswitch.conf: etc/ssh/nsswitch.conf
