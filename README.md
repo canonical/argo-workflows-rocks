@@ -1,2 +1,2 @@
 # argo-workflows-rocks
-ROCKs for Argoi Workflows
+rocks for Argoi Workflows
