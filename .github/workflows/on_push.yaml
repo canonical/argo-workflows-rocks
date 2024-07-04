@@ -9,13 +9,13 @@ on:
 jobs:
 
   on-push:
-    name: Get ROCKs modified and build-scan-test-publish them
+    name: Get rocks modified and build-scan-test-publish them
     uses: canonical/charmed-kubeflow-workflows/.github/workflows/get-rocks-modified-and-build-scan-test-publish.yaml@main
     permissions:
       pull-requests: read
     secrets: inherit
     with:
       microk8s-channel: 1.26-strict/stable
-      juju-channel: 3.1/stable
+      juju-channel: 3.4/stable
       python-version: "3.8"
       rockcraft-channel: latest/stable
