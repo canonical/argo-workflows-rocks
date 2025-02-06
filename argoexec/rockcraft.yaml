@@ -1,13 +1,13 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
-# Based on: https://github.com/argoproj/argo-workflows/blob/v3.4.16/Dockerfile
+# Based on: https://github.com/argoproj/argo-workflows/blob/v3.4.17/Dockerfile
 name: argoexec
 summary: An image for Argo Workflows executor.
 description: |
     This image is used as part of the Charmed Kubeflow product. An Argo workflow executor is a process that conforms to a specific interface that allows Argo to perform certain actions like monitoring pod logs, collecting artifacts, managing container lifecycles, etc.
 license: Apache-2.0
 base: ubuntu@22.04
-version: "3.4.16"
+version: "3.4.17"
 run-user: _daemon_
 services:
   argoexec:
@@ -39,9 +39,9 @@ parts:
     after: [base-deps]
     source: https://github.com/argoproj/argo-workflows
     source-type: git
-    source-tag: v3.4.16
+    source-tag: v3.4.17
     build-snaps:
-      - go/1.20/stable
+      - go/1.21/stable
     build-packages:
       - git
       - make
@@ -57,16 +57,16 @@ parts:
       - tar
       - gzip
     override-build: |
-      # builder stage https://github.com/argoproj/argo-workflows/blob/v3.4.16/Dockerfile#L21
+      # builder stage https://github.com/argoproj/argo-workflows/blob/v3.4.17/Dockerfile#L21
       go mod download
 
       # reset LDFLAGS because Go has different format, i.e. '-L' is undefined in Go
       LDFLAGS=""
 
-      # argoexec-build stage https://github.com/argoproj/argo-workflows/blob/v3.4.16/Dockerfile#L46
+      # argoexec-build stage https://github.com/argoproj/argo-workflows/blob/v3.4.17/Dockerfile#L46
       make dist/argoexec
 
-      # argoexec stage https://github.com/argoproj/argo-workflows/blob/v3.4.16/Dockerfile#L79
+      # argoexec stage https://github.com/argoproj/argo-workflows/blob/v3.4.17/Dockerfile#L79
       install -DT "./dist/argoexec" "$CRAFT_PART_INSTALL/bin/argoexec"
       install -DT "/etc/mime.types" "$CRAFT_PART_INSTALL/etc/mime.types"
 
@@ -76,7 +76,7 @@ parts:
     source: https://github.com/argoproj/argo-workflows
     source-type: git
     source-subdir: hack
-    source-tag: v3.4.16
+    source-tag: v3.4.17
     organize:
       ssh_known_hosts: etc/ssh/ssh_known_hosts
       nsswitch.conf: etc/ssh/nsswitch.conf
