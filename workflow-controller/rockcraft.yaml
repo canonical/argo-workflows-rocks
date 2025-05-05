@@ -42,13 +42,13 @@ parts:
       - go/1.21/stable
     build-packages:
       - git
+      - make
       - ca-certificates
       - wget
       - curl
       - gcc
       - mailcap
-      - libcap2-bin
-      - zip
+      - bash
     override-build: |
       # builder stage
       # https://github.com/argoproj/argo-workflows/blob/v3.4.17/Dockerfile#L21
