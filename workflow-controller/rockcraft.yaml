@@ -54,9 +54,6 @@ parts:
       # https://github.com/argoproj/argo-workflows/blob/v3.4.17/Dockerfile#L21
       go mod download
 
-      # reset LDFLAGS because Go has different format, i.e. '-L' is undefined in Go
-      LDFLAGS=""
-
       # workflow-controller-build
       # https://github.com/argoproj/argo-workflows/blob/v3.4.17/Dockerfile#L56
       make dist/workflow-controller
