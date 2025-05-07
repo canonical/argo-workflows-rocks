@@ -9,12 +9,12 @@ description: |
 version: "3.4.17"
 license: Apache-2.0
 base: ubuntu@22.04
+run-user: _daemon_
 services:
   workflow-controller:
     override: replace
     command: workflow-controller
     startup: enabled
-    user: ubuntu
 platforms:
     amd64:
 
