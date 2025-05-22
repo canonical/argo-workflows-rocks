@@ -8,7 +8,7 @@ description: |
     This image is used as part of the Charmed Kubeflow product. An Argo workflow controller is a process that conforms to a specific interface that allows Argo to perform certain actions like monitoring pod logs, collecting artifacts, managing container lifecycles, etc.
 version: "3.4.17"
 license: Apache-2.0
-base: ubuntu@22.04
+base: ubuntu@24.04
 run-user: _daemon_
 services:
   workflow-controller:
@@ -19,22 +19,8 @@ platforms:
     amd64:
 
 parts:
-  security-team-requirement:
+  controller:
     plugin: nil
-    override-build: |
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
-      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
-
-  base-deps:
-    plugin: nil
-    stage-packages:
-      - base-files
-      - netbase
-      - tzdata
-
-  builder:
-    plugin: make
-    after: [base-deps]
     source: https://github.com/argoproj/argo-workflows
     source-type: git
     source-tag: v3.4.17
@@ -49,13 +35,16 @@ parts:
       - gcc
       - mailcap
       - bash
+    stage-packages:
+      - base-files
+      - netbase
+      - tzdata
     override-build: |
       # builder stage
       # https://github.com/argoproj/argo-workflows/blob/v3.4.17/Dockerfile#L21
       go mod download
 
       # reset LDFLAGS, since rockcraft addes entries that go can't parse.
-      # Some default values are: -L/root/stage/lib -L/root/stage/usr/lib
       LDFLAGS=""
 
       # workflow-controller-build
@@ -64,23 +53,20 @@ parts:
 
       # workflow-controller stage
       # https://github.com/argoproj/argo-workflows/blob/v3.4.17/Dockerfile#L90
-      install -DTd "/usr/share/zoneinfo" "$CRAFT_PART_INSTALL/usr/share/zoneinfo"
       install -DT "./dist/workflow-controller" "$CRAFT_PART_INSTALL/bin/workflow-controller"
 
-  copy-files:
+  copy-hack-files:
     plugin: dump
-    after: [builder]
+    after: [controller]
     source: https://github.com/argoproj/argo-workflows
     source-type: git
     source-subdir: hack
     source-tag: v3.4.17
+    # Move the files we want to copy in the expected place in the part's install dir
     organize:
       ssh_known_hosts: etc/ssh/ssh_known_hosts
-      nsswitch.conf: etc/ssh/nsswitch.conf
-      arch.sh: bin/arch.sh
-      os.sh: bin/os.sh
+      nsswitch.conf: etc/nsswitch.conf
+    # Only keep the 2 files we want from the part's install dir
     stage:
       - etc/ssh/ssh_known_hosts
-      - etc/ssh/nsswitch.conf
-      - bin/arch.sh
-      - bin/os.sh
+      - etc/nsswitch.conf
