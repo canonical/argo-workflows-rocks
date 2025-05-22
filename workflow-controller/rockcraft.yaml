@@ -11,9 +11,9 @@ license: Apache-2.0
 base: ubuntu@24.04
 run-user: _daemon_
 services:
-  workflow-controller:
+  argo-controller:
     override: replace
-    command: workflow-controller
+    command: workflow-controller [ ]
     startup: enabled
 platforms:
     amd64:
