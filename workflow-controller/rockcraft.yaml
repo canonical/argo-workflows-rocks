@@ -10,13 +10,16 @@ version: "3.4.17"
 license: Apache-2.0
 base: ubuntu@24.04
 run-user: _daemon_
+
+platforms:
+    amd64:
+
+entrypoint-service: argo-controller
 services:
   argo-controller:
     override: replace
     command: workflow-controller [ ]
     startup: enabled
-platforms:
-    amd64:
 
 parts:
   controller:
