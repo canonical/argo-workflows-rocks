@@ -14,11 +14,10 @@ run-user: _daemon_
 platforms:
     amd64:
 
-entrypoint-service: argo-controller
 services:
   argo-controller:
     override: replace
-    command: workflow-controller [ ]
+    command: workflow-controller
     startup: enabled
 
 parts:
