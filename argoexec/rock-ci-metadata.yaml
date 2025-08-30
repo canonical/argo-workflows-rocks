@@ -1,0 +1,6 @@
+integrations:
+  - consumer-repository: https://github.com/canonical/argo-operators.git
+    replace-image:
+      - file: charms/argo-controller/config.yaml
+        path: options.executor-image.default
+
