@@ -53,12 +53,12 @@ def test_rock():
             "exec",
             "ls",
             "-la",
-            "/bin/arch.sh",
+            "/usr/local/bin/arch.sh",
         ],
         check=True,
     )
 
     subprocess.run(
-        ["docker", "run", "--rm", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/bin/os.sh"],
+        ["docker", "run", "--rm", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/usr/local/bin/os.sh"],
         check=True,
     )
