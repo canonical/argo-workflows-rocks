@@ -27,16 +27,8 @@ parts:
       dpkg-query --root=${CRAFT_PROJECT_DIR}/../bundles/ubuntu-22.04/rootfs/ -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
       > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
 
-  base-deps:
-    plugin: nil
-    stage-packages:
-      - base-files
-      - netbase
-      - tzdata
-
   builder:
     plugin: make
-    after: [base-deps]
     source: https://github.com/argoproj/argo-workflows
     source-type: git
     source-tag: v3.7.3
@@ -52,13 +44,16 @@ parts:
       - libc-dev
       - mailcap
     stage-packages:
+      - base-files
+      - netbase
+      - tzdata
       - git
       - libcap2
       - jq
       - tar
       - gzip
     override-build: |
-      # builder stage https://github.com/argoproj/argo-workflows/blob/v3.7.3/Dockerfile#L21
+      # builder stage https://github.com/argoproj/argo-workflows/blob/v3.7.3/Dockerfile#L23
       go mod download
 
       # reset LDFLAGS because Go has different format, i.e. '-L' is undefined in Go
@@ -81,10 +76,10 @@ parts:
     organize:
       ssh_known_hosts: etc/ssh/ssh_known_hosts
       nsswitch.conf: etc/ssh/nsswitch.conf
-      arch.sh: bin/arch.sh
-      os.sh: bin/os.sh
+      arch.sh: usr/local/bin/arch.sh
+      os.sh: usr/local/bin/os.sh
     stage:
       - etc/ssh/ssh_known_hosts
       - etc/ssh/nsswitch.conf
-      - bin/arch.sh
-      - bin/os.sh
+      - usr/local/bin/arch.sh
+      - usr/local/bin/os.sh
