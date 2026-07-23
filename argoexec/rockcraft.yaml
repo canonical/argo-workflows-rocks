@@ -80,6 +80,6 @@ parts:
       os.sh: usr/local/bin/os.sh
     stage:
       - etc/ssh/ssh_known_hosts
-      - etc/ssh/nsswitch.conf
+      - etc/nsswitch.conf
       - usr/local/bin/arch.sh
       - usr/local/bin/os.sh
