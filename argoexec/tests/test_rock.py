@@ -39,7 +39,7 @@ def test_rock():
             "exec",
             "ls",
             "-la",
-            "/etc/ssh/nsswitch.conf",
+            "/etc/nsswitch.conf",
         ],
         check=True,
     )
