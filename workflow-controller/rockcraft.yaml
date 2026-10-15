@@ -31,7 +31,6 @@ parts:
     build-packages:
       - git
       - make
-      - ca-certificates
       - wget
       - curl
       - gcc
@@ -42,6 +41,8 @@ parts:
       - base-files
       - netbase
       - tzdata
+    overlay-packages:
+      - ca-certificates
     override-build: |
       # builder stage
       # https://github.com/argoproj/argo-workflows/blob/v3.7.3/Dockerfile#L21
