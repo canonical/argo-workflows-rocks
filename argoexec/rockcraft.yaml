@@ -37,7 +37,6 @@ parts:
     build-packages:
       - git
       - make
-      - ca-certificates
       - wget
       - curl
       - gcc
@@ -52,6 +51,8 @@ parts:
       - jq
       - tar
       - gzip
+    overlay-packages:
+      - ca-certificates
     override-build: |
       # builder stage https://github.com/argoproj/argo-workflows/blob/v3.7.17/Dockerfile#L23
       go mod download
