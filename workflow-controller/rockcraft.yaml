@@ -8,7 +8,7 @@ description: |
     This image is used as part of the Charmed Kubeflow product. An Argo workflow controller is a process that conforms to a specific interface that allows Argo to perform certain actions like monitoring pod logs, collecting artifacts, managing container lifecycles, etc.
 version: "4.1.6"
 license: Apache-2.0
-base: ubuntu@24.04
+base: ubuntu@26.04
 run-user: _daemon_
 
 platforms:
