@@ -6,7 +6,7 @@ summary: An image for Argo Workflows executor.
 description: |
     This image is used as part of the Charmed Kubeflow product. An Argo workflow executor is a process that conforms to a specific interface that allows Argo to perform certain actions like monitoring pod logs, collecting artifacts, managing container lifecycles, etc.
 license: Apache-2.0
-base: ubuntu@24.04
+base: ubuntu@26.04
 version: "4.1.6"
 run-user: _daemon_
 services:
